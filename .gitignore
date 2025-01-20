@@ -1,0 +1,5 @@
+config.h
+compile_commands.json
+*.o
+dwm
+.cache
