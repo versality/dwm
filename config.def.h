@@ -46,6 +46,7 @@ static const int lpm[] = {
 
 static const Layout layouts[] = {
 	/* symbol     arrange function */
+  { "[U]",      ultrawide },
 	{ "[]=",      tile },    /* first entry is default */
 	{ "><>",      NULL },    /* no layout function means floating behavior */
 	{ "[M]",      monocle },

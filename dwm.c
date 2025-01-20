@@ -227,6 +227,7 @@ static void updatestatus(void);
 static void updatetitle(Client *c);
 static void updatewindowtype(Client *c);
 static void updatewmhints(Client *c);
+static void ultrawide(Monitor *m);
 static void view(const Arg *arg);
 static Client *wintoclient(Window w);
 static Monitor *wintomon(Window w);
@@ -2091,6 +2092,50 @@ updatewmhints(Client *c)
 			c->neverfocus = 0;
 		XFree(wmh);
 	}
+}
+
+static void
+ultrawide(Monitor *m) {
+    unsigned int i, n;
+    Client *c;
+    int w, h;           /* window width and height */
+    int x;              /* window x position */
+    int verticalOffset = 2;    // Vertical offset
+    int horizontalGap = 4;     // Horizontal gap between windows
+
+    /* Count windows */
+    for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
+    if (n == 0)
+        return;
+
+    h = m->wh - verticalOffset;
+
+    if (n == 1) {
+        /* Single window: 16:9 centered */
+        w = (h * 16) / 9;
+        if (w > m->ww - 2 * horizontalGap) {  // Account for left and right gaps
+            w = m->ww - 2 * horizontalGap;
+        }
+        x = m->wx + (m->ww - w) / 2;
+        c = nexttiled(m->clients);
+        resize(c, x, m->wy, w, h, 0);
+    }
+    else if (n == 2) {
+        /* Two windows: split screen in half */
+        w = (m->ww - (3 * horizontalGap)) / 2;  // Account for left, middle, and right gaps
+        x = m->wx + horizontalGap;  // Start after left gap
+        for (i = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
+            resize(c, x + (i * (w + horizontalGap)), m->wy, w, h, 0);
+        }
+    }
+    else {
+        /* Three or more: equal distribution */
+        w = (m->ww - (horizontalGap * (n + 1))) / n;  // Account for all gaps including edges
+        x = m->wx + horizontalGap;  // Start after left gap
+        for (i = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
+            resize(c, x + (i * (w + horizontalGap)), m->wy, w, h, 0);
+        }
+    }
 }
 
 void
